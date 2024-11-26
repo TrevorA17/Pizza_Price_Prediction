@@ -151,3 +151,52 @@ summary(anova_variant)
 tukey_variant <- TukeyHSD(anova_variant)
 print(tukey_variant)
 
+# Load necessary libraries
+library(ggplot2)
+library(GGally)
+library(car)
+
+# Univariate Plots
+## 1. Histogram for price_rupiah
+ggplot(PizzaData, aes(x = price_rupiah)) +
+  geom_histogram(binwidth = 5000, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Histogram of Pizza Prices", x = "Price (in Rupiah)", y = "Frequency") +
+  theme_minimal()
+
+## 2. Boxplot for price_rupiah by pizza size
+ggplot(PizzaData, aes(x = size, y = price_rupiah, fill = size)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Price by Pizza Size", x = "Size", y = "Price (in Rupiah)") +
+  theme_minimal()
+
+## 3. Bar plot for topping frequency
+ggplot(PizzaData, aes(x = topping)) +
+  geom_bar(fill = "lightgreen", color = "black") +
+  labs(title = "Bar Plot of Topping Frequency", x = "Topping", y = "Count") +
+  theme_minimal()
+
+# Multivariate Plots
+## 1. Scatter plot for price_rupiah vs diameter
+ggplot(PizzaData, aes(x = diameter, y = price_rupiah)) +
+  geom_point(aes(color = size), size = 3, alpha = 0.7) +
+  labs(title = "Scatter Plot of Price vs Diameter", x = "Diameter (in cm)", y = "Price (in Rupiah)") +
+  theme_minimal() +
+  scale_color_manual(values = c("red", "blue", "green"))
+
+## 2. Boxplot for price_rupiah by topping and size
+ggplot(PizzaData, aes(x = topping, y = price_rupiah, fill = size)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Price by Topping and Size", x = "Topping", y = "Price (in Rupiah)") +
+  theme_minimal()
+
+## 3. Pair plot for numeric variables (price_rupiah and diameter)
+ggpairs(PizzaData[, c("price_rupiah", "diameter")], aes(color = size, alpha = 0.6))
+
+## 4. Facet grid to compare price_rupiah by size and topping
+ggplot(PizzaData, aes(x = topping, y = price_rupiah)) +
+  geom_boxplot(aes(color = topping)) +
+  facet_grid(~ size) +
+  labs(title = "Facet Grid: Price by Topping and Size", x = "Topping", y = "Price (in Rupiah)") +
+  theme_minimal()
+
+
