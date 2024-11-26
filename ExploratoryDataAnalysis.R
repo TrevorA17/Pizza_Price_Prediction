@@ -112,3 +112,42 @@ kurt_price <- kurtosis(PizzaData$price_rupiah)
 print(paste("Skewness of Price:", skew_price))
 print(paste("Kurtosis of Price:", kurt_price))
 
+# ANOVA for price based on pizza size
+anova_size <- aov(price_rupiah ~ size, data = PizzaData)
+
+# Display ANOVA table for size
+summary(anova_size)
+
+# Post-hoc test if ANOVA for size is significant
+tukey_size <- TukeyHSD(anova_size)
+
+# Display the post-hoc test results
+print(tukey_size)
+
+# Check assumptions:
+# 1. Residuals vs Fitted plot (for homogeneity of variances)
+# 2. Normal Q-Q plot (for normality of residuals)
+par(mfrow = c(1, 2))  # Set up two plots side by side
+plot(anova_size, 1)   # Residuals vs Fitted plot
+plot(anova_size, 2)   # Normal Q-Q plot
+
+# Levene's Test for homogeneity of variances
+library(car)
+leveneTest(price_rupiah ~ size, data = PizzaData)
+
+# ANOVA for price based on topping type
+anova_topping <- aov(price_rupiah ~ topping, data = PizzaData)
+summary(anova_topping)
+
+# Post-hoc test if ANOVA for topping is significant
+tukey_topping <- TukeyHSD(anova_topping)
+print(tukey_topping)
+
+# ANOVA for price based on pizza variant
+anova_variant <- aov(price_rupiah ~ variant, data = PizzaData)
+summary(anova_variant)
+
+# Post-hoc test if ANOVA for variant is significant
+tukey_variant <- TukeyHSD(anova_variant)
+print(tukey_variant)
+
