@@ -95,3 +95,17 @@ svr_predictions <- predict(svr_model, newdata = testData)
 svr_rmse <- sqrt(mean((svr_predictions - testData$price_rupiah)^2))
 cat("Test RMSE for Support Vector Regression: ", svr_rmse, "\n")
 
+# Combine the models into a list
+models_list <- list(lm = lm_model, rf = rf_model, svr = svr_model)
+
+# Compare the models using resampling
+resample_results <- resamples(models_list)
+
+# Summarize the resampling results
+summary(resample_results)
+
+# Plot the comparison of RMSE across the models
+bwplot(resample_results, metric = "RMSE", main = "Model Comparison - RMSE")
+
+# Plot the comparison of R-Squared across the models
+bwplot(resample_results, metric = "Rsquared", main = "Model Comparison - R-Squared")
