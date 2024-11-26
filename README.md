@@ -1,2 +1,2 @@
-# Pizza_Price_Prediction
-predicting the prices of pizza based on features
+# Pizza Price Prediction
+This project aims to predict pizza prices based on various features such as diameter, topping, variant, size, and whether extra sauce and cheese are added. Using a dataset with these attributes, we trained a Random Forest regression model to predict the price of a pizza. The model was evaluated using several performance metrics, including Mean Absolute Error (MAE), Root Mean Squared Error (RMSE), and R-squared values, to ensure its accuracy. The project also includes a Plumber API, which serves the trained model, allowing users to input pizza characteristics and receive an estimated price. This API provides an easy way to integrate the model into a web application or other systems for real-time price prediction.
