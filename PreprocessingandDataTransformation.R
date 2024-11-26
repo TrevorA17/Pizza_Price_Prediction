@@ -37,3 +37,4 @@ cat("Total number of missing values in the dataset:", total_missing, "\n")
 if (total_missing > 0) {
   print(PizzaData[!complete.cases(PizzaData), ])
 }
+
