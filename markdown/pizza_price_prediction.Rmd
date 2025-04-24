@@ -1,0 +1,435 @@
+---
+title: "Pizza Price Prediction"
+author: "Trevor Okinda"
+date: "2024"
+output:
+  github_document: 
+    toc: yes
+    toc_depth: 4
+    fig_width: 6
+    fig_height: 4
+    df_print: default
+editor_options:
+  chunk_output_type: console
+---
+
+# Student Details
+
+|                                              |     |
+|----------------------------------------------|-----|
+| **Student ID Number**                        | 134780 |
+| **Student Name**                             | Trevor Okinda |
+| **BBIT 4.2 Group**                           | C |
+| **Project Name**                             | Pizza Price Prediction |
+
+# Setup Chunk
+
+**Note:** the following KnitR options have been set as the global defaults: <BR> `knitr::opts_chunk$set(echo = TRUE, warning = FALSE, eval = TRUE, collapse = FALSE, tidy = TRUE)`.
+
+More KnitR options are documented here <https://bookdown.org/yihui/rmarkdown-cookbook/chunk-options.html> and here <https://yihui.org/knitr/options/>.
+
+```{r setup, include=FALSE}
+library(formatR)
+knitr::opts_chunk$set(
+  warning = FALSE,
+  collapse = FALSE
+)
+```
+
+### Source: 
+
+The dataset that was used can be downloaded here: *\<https://www.kaggle.com/datasets/knightbearr/pizza-price-prediction?select=pizza_v2.csv\>*
+
+### Reference:
+
+*\<Knightbearr. (n.d.). Pizza Price Prediction (Playground Data) [Data set]. Kaggle. Retrieved April 24, 2025, from https://www.kaggle.com/datasets/knightbearr/pizza-price-prediction?select=pizza_v2.csv\>\
+Refer to the APA 7th edition manual for rules on how to cite datasets: <https://apastyle.apa.org/style-grammar-guidelines/references/examples/data-set-references>*
+
+# Understanding the Dataset (Exploratory Data Analysis (EDA))
+
+## Loading the Dataset
+```{r load dataset}
+# Load the dataset
+PizzaData <- read.csv("pizza_v1.csv", colClasses = c(
+  company = "factor",
+  price_rupiah = "numeric",
+  diameter = "numeric",
+  topping = "factor",
+  variant = "factor",
+  size = "factor",
+  extra_sauce = "factor",
+  extra_cheese = "factor"
+))
+
+# Display structure to verify data types
+str(PizzaData)
+
+# Display the first few rows to ensure data is loaded correctly
+head(PizzaData)
+
+# View the dataset in a spreadsheet-like interface (optional)
+View(PizzaData)
+```
+
+## Measures of Frequency
+```{r MOF}
+# Measures of Frequency for categorical variables (e.g., company, topping, variant)
+company_freq <- table(PizzaData$company)
+topping_freq <- table(PizzaData$topping)
+variant_freq <- table(PizzaData$variant)
+size_freq <- table(PizzaData$size)
+
+# Display frequency tables
+print(company_freq)
+print(topping_freq)
+print(variant_freq)
+print(size_freq)
+
+# For extra features: Frequency of 'extra_sauce' and 'extra_cheese'
+extra_sauce_freq <- table(PizzaData$extra_sauce)
+extra_cheese_freq <- table(PizzaData$extra_cheese)
+
+# Display these frequencies
+print(extra_sauce_freq)
+print(extra_cheese_freq)
+```
+
+## Measures of Central Tendency
+```{r MOCT}
+# Mean (average) of price_rupiah and diameter
+mean_price <- mean(PizzaData$price_rupiah)
+mean_diameter <- mean(PizzaData$diameter)
+
+# Median (middle value) of price_rupiah and diameter
+median_price <- median(PizzaData$price_rupiah)
+median_diameter <- median(PizzaData$diameter)
+
+# Mode (most frequent value) - Custom function for mode
+get_mode <- function(x) {
+  uniq_x <- unique(x)
+  uniq_x[which.max(tabulate(match(x, uniq_x)))]
+}
+
+# Mode for categorical variables
+mode_topping <- get_mode(PizzaData$topping)
+mode_variant <- get_mode(PizzaData$variant)
+mode_size <- get_mode(PizzaData$size)
+
+# Display results
+print(paste("Mean Price:", mean_price))
+print(paste("Mean Diameter:", mean_diameter))
+print(paste("Median Price:", median_price))
+print(paste("Median Diameter:", median_diameter))
+print(paste("Mode Topping:", mode_topping))
+print(paste("Mode Variant:", mode_variant))
+print(paste("Mode Size:", mode_size))
+```
+
+## Measures of Distribution
+```{r MOD}
+# Variance and Standard Deviation for price_rupiah and diameter
+var_price <- var(PizzaData$price_rupiah)
+sd_price <- sd(PizzaData$price_rupiah)
+
+var_diameter <- var(PizzaData$diameter)
+sd_diameter <- sd(PizzaData$diameter)
+
+# Range (minimum and maximum) for price_rupiah and diameter
+range_price <- range(PizzaData$price_rupiah)
+range_diameter <- range(PizzaData$diameter)
+
+# Interquartile Range (IQR) for price_rupiah and diameter
+iqr_price <- IQR(PizzaData$price_rupiah)
+iqr_diameter <- IQR(PizzaData$diameter)
+
+# Display results
+print(paste("Variance in Price:", var_price))
+print(paste("Standard Deviation in Price:", sd_price))
+print(paste("Range of Price:", range_price))
+print(paste("IQR of Price:", iqr_price))
+
+print(paste("Variance in Diameter:", var_diameter))
+print(paste("Standard Deviation in Diameter:", sd_diameter))
+print(paste("Range of Diameter:", range_diameter))
+print(paste("IQR of Diameter:", iqr_diameter))
+
+# Skewness and Kurtosis for price_rupiah
+library(e1071)
+skew_price <- skewness(PizzaData$price_rupiah)
+kurt_price <- kurtosis(PizzaData$price_rupiah)
+
+print(paste("Skewness of Price:", skew_price))
+print(paste("Kurtosis of Price:", kurt_price))
+```
+
+## Measures of Relationship
+```{r MOR}
+# Correlation between price_rupiah and diameter (only for numerical variables)
+cor_price_diameter <- cor(PizzaData$price_rupiah, PizzaData$diameter)
+
+# Cross-tabulation between categorical variables (e.g., company and size)
+company_size_crosstab <- table(PizzaData$company, PizzaData$size)
+
+# Display results
+print(paste("Correlation between Price and Diameter:", cor_price_diameter))
+print("Company and Size Cross-tabulation:")
+print(company_size_crosstab)
+```
+
+## ANOVA
+```{r ANOVA}
+# ANOVA for price based on pizza size
+anova_size <- aov(price_rupiah ~ size, data = PizzaData)
+
+# Display ANOVA table for size
+summary(anova_size)
+
+# Post-hoc test if ANOVA for size is significant
+tukey_size <- TukeyHSD(anova_size)
+
+# Display the post-hoc test results
+print(tukey_size)
+
+# Check assumptions:
+# 1. Residuals vs Fitted plot (for homogeneity of variances)
+# 2. Normal Q-Q plot (for normality of residuals)
+par(mfrow = c(1, 2))  # Set up two plots side by side
+plot(anova_size, 1)   # Residuals vs Fitted plot
+plot(anova_size, 2)   # Normal Q-Q plot
+
+# Levene's Test for homogeneity of variances
+library(car)
+leveneTest(price_rupiah ~ size, data = PizzaData)
+
+# ANOVA for price based on topping type
+anova_topping <- aov(price_rupiah ~ topping, data = PizzaData)
+summary(anova_topping)
+
+# Post-hoc test if ANOVA for topping is significant
+tukey_topping <- TukeyHSD(anova_topping)
+print(tukey_topping)
+
+# ANOVA for price based on pizza variant
+anova_variant <- aov(price_rupiah ~ variant, data = PizzaData)
+summary(anova_variant)
+
+# Post-hoc test if ANOVA for variant is significant
+tukey_variant <- TukeyHSD(anova_variant)
+print(tukey_variant)
+```
+
+## Plots
+```{r Plots}
+# Load necessary libraries
+library(ggplot2)
+library(GGally)
+library(car)
+
+# Univariate Plots
+## 1. Histogram for price_rupiah
+ggplot(PizzaData, aes(x = price_rupiah)) +
+  geom_histogram(binwidth = 5000, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Histogram of Pizza Prices", x = "Price (in Rupiah)", y = "Frequency") +
+  theme_minimal()
+
+## 2. Boxplot for price_rupiah by pizza size
+ggplot(PizzaData, aes(x = size, y = price_rupiah, fill = size)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Price by Pizza Size", x = "Size", y = "Price (in Rupiah)") +
+  theme_minimal()
+
+## 3. Bar plot for topping frequency
+ggplot(PizzaData, aes(x = topping)) +
+  geom_bar(fill = "lightgreen", color = "black") +
+  labs(title = "Bar Plot of Topping Frequency", x = "Topping", y = "Count") +
+  theme_minimal()
+
+# Multivariate Plots
+
+
+## 2. Boxplot for price_rupiah by topping and size
+ggplot(PizzaData, aes(x = topping, y = price_rupiah, fill = size)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Price by Topping and Size", x = "Topping", y = "Price (in Rupiah)") +
+  theme_minimal()
+
+
+## 4. Facet grid to compare price_rupiah by size and topping
+ggplot(PizzaData, aes(x = topping, y = price_rupiah)) +
+  geom_boxplot(aes(color = topping)) +
+  facet_grid(~ size) +
+  labs(title = "Facet Grid: Price by Topping and Size", x = "Topping", y = "Price (in Rupiah)") +
+  theme_minimal()
+
+```
+
+# Preprocessing & Data Transformation
+## Missing Values
+```{r Missing Values}
+# Check for missing values in the entire dataset
+missing_values <- sapply(PizzaData, function(x) sum(is.na(x)))
+
+# Display the count of missing values per column
+print(missing_values)
+
+# Check if there are any missing values in the entire dataset
+if (any(is.na(PizzaData))) {
+  cat("There are missing values in the dataset.\n")
+} else {
+  cat("There are no missing values in the dataset.\n")
+}
+
+# Check the total number of missing values in the dataset
+total_missing <- sum(is.na(PizzaData))
+cat("Total number of missing values in the dataset:", total_missing, "\n")
+
+# Optionally, display rows with missing values (if any)
+if (total_missing > 0) {
+  print(PizzaData[!complete.cases(PizzaData), ])
+}
+
+
+```
+
+# Training Models
+## Data Splitting
+```{r Data Splitting}
+# Load necessary libraries
+library(caret)     # For data splitting and cross-validation
+library(boot)      # For bootstrapping
+library(ggplot2)   # For visualization (optional)
+
+# Data Splitting
+set.seed(123)  # Set seed for reproducibility
+
+# Split the dataset into training (70%) and testing (30%)
+trainIndex <- createDataPartition(PizzaData$price_rupiah, p = 0.7, 
+                                  list = FALSE, 
+                                  times = 1)
+trainData <- PizzaData[trainIndex, ]
+testData <- PizzaData[-trainIndex, ]
+
+# Print sizes of training and testing datasets
+cat("Training Data Size: ", nrow(trainData), "\n")
+cat("Testing Data Size: ", nrow(testData), "\n")
+```
+
+## Cross-validation
+```{r Cross-validation}
+# Cross-Validation (Basic)
+## 10-fold Cross-validation
+set.seed(123)  # Set seed for reproducibility
+cv_model <- train(price_rupiah ~ diameter + topping + size + extra_sauce + extra_cheese,
+                  data = trainData, 
+                  method = "lm", 
+                  trControl = trainControl(method = "cv", number = 10))  # 10-fold cross-validation
+cat("Basic Cross-validation RMSE: ", cv_model$results$RMSE, "\n")
+```
+
+## Training Different Models
+```{r Different Models}
+# Load necessary libraries
+library(caret)     # For model training
+library(randomForest)  # For Random Forest
+library(e1071)      # For Support Vector Machines (SVM)
+library(ggplot2)    # For visualization (optional)
+
+# Data Splitting (70% training, 30% testing)
+set.seed(123)
+trainIndex <- createDataPartition(PizzaData$price_rupiah, p = 0.7, list = FALSE, times = 1)
+trainData <- PizzaData[trainIndex, ]
+testData <- PizzaData[-trainIndex, ]
+
+# 1. Linear Regression Model
+lm_model <- train(price_rupiah ~ diameter + topping + size + extra_sauce + extra_cheese,
+                  data = trainData, 
+                  method = "lm", 
+                  trControl = trainControl(method = "cv", number = 10))  # 10-fold Cross-validation
+
+# Print results for Linear Regression
+cat("Linear Regression RMSE: ", lm_model$results$RMSE, "\n")
+
+# 2. Random Forest Model
+rf_model <- train(price_rupiah ~ diameter + topping + size + extra_sauce + extra_cheese,
+                  data = trainData, 
+                  method = "rf", 
+                  trControl = trainControl(method = "cv", number = 10),  # 10-fold Cross-validation
+                  tuneLength = 5)  # Tune for 5 different values of mtry (number of features for splitting)
+
+# Print results for Random Forest
+cat("Random Forest RMSE: ", rf_model$results$RMSE, "\n")
+
+# 3. Support Vector Regression (SVR) Model
+svr_model <- train(price_rupiah ~ diameter + topping + size + extra_sauce + extra_cheese,
+                   data = trainData, 
+                   method = "svmRadial", 
+                   trControl = trainControl(method = "cv", number = 10),  # 10-fold Cross-validation
+                   tuneLength = 5)  # Tune for 5 different values of sigma (RBF kernel parameter)
+
+# Print results for Support Vector Regression
+cat("Support Vector Regression RMSE: ", svr_model$results$RMSE, "\n")
+
+```
+
+## Evaluate Models on Test data
+```{r evaluation}
+# Evaluate models on test data
+# 1. Predict with Linear Regression
+lm_predictions <- predict(lm_model, newdata = testData)
+lm_rmse <- sqrt(mean((lm_predictions - testData$price_rupiah)^2))
+cat("Test RMSE for Linear Regression: ", lm_rmse, "\n")
+
+# 2. Predict with Random Forest
+rf_predictions <- predict(rf_model, newdata = testData)
+rf_rmse <- sqrt(mean((rf_predictions - testData$price_rupiah)^2))
+cat("Test RMSE for Random Forest: ", rf_rmse, "\n")
+
+# 3. Predict with Support Vector Regression
+svr_predictions <- predict(svr_model, newdata = testData)
+svr_rmse <- sqrt(mean((svr_predictions - testData$price_rupiah)^2))
+cat("Test RMSE for Support Vector Regression: ", svr_rmse, "\n")
+
+```
+
+## Performance Comparison with resamples
+```{r resamples}
+# Combine the models into a list
+models_list <- list(lm = lm_model, rf = rf_model, svr = svr_model)
+
+# Compare the models using resampling
+resample_results <- resamples(models_list)
+
+# Summarize the resampling results
+summary(resample_results)
+
+# Plot the comparison of RMSE across the models
+bwplot(resample_results, metric = "RMSE", main = "Model Comparison - RMSE")
+
+# Plot the comparison of R-Squared across the models
+bwplot(resample_results, metric = "Rsquared", main = "Model Comparison - R-Squared")
+
+```
+
+## Saving Model
+```{r Saving Model}
+# Load the saved model
+loaded_rf_model <- readRDS("./models/saved_rf_model.rds")
+
+# Example data to make predictions (adjust according to your dataset's features)
+new_data <- data.frame(
+  diameter = 18,  # Example value for diameter
+  topping = "chicken",  # Example value for topping
+  variant = "double_signature",  # Example value for variant
+  size = "jumbo",  # Example value for size
+  extra_sauce = "yes",  # Example value for extra_sauce
+  extra_cheese = "yes"  # Example value for extra_cheese
+)
+
+# Use the loaded model to make predictions
+predictions_loaded_model <- predict(loaded_rf_model, newdata = new_data)
+
+# Print predictions
+print(predictions_loaded_model)
+
+```
+

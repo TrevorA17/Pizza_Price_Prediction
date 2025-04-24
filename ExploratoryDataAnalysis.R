@@ -176,12 +176,7 @@ ggplot(PizzaData, aes(x = topping)) +
   theme_minimal()
 
 # Multivariate Plots
-## 1. Scatter plot for price_rupiah vs diameter
-ggplot(PizzaData, aes(x = diameter, y = price_rupiah)) +
-  geom_point(aes(color = size), size = 3, alpha = 0.7) +
-  labs(title = "Scatter Plot of Price vs Diameter", x = "Diameter (in cm)", y = "Price (in Rupiah)") +
-  theme_minimal() +
-  scale_color_manual(values = c("red", "blue", "green"))
+
 
 ## 2. Boxplot for price_rupiah by topping and size
 ggplot(PizzaData, aes(x = topping, y = price_rupiah, fill = size)) +
@@ -189,8 +184,6 @@ ggplot(PizzaData, aes(x = topping, y = price_rupiah, fill = size)) +
   labs(title = "Boxplot of Price by Topping and Size", x = "Topping", y = "Price (in Rupiah)") +
   theme_minimal()
 
-## 3. Pair plot for numeric variables (price_rupiah and diameter)
-ggpairs(PizzaData[, c("price_rupiah", "diameter")], aes(color = size, alpha = 0.6))
 
 ## 4. Facet grid to compare price_rupiah by size and topping
 ggplot(PizzaData, aes(x = topping, y = price_rupiah)) +
